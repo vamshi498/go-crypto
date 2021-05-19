@@ -41,7 +41,7 @@ func main() {
 	}()
 
 	r.HandleFunc("/currency/{symbol}", getCurrentPriceForSymbol).Methods(http.MethodGet)
-	r.HandleFunc("/currency/all", getAllCurenciesForAllSymbols).Methods(http.MethodGet)
+	r.HandleFunc("/currency", getAllCurenciesForAllSymbols).Methods(http.MethodGet)
 	//block untill we recieve signal
 	<-sChan
 	httpServer.Shutdown(context.Background())
@@ -73,7 +73,7 @@ func getCurrentPriceForSymbol(w http.ResponseWriter, req *http.Request) {
 
 func getAllCurenciesForAllSymbols(w http.ResponseWriter, req *http.Request) {
 
-	
+	log.Println("inside all method")
 	response, err := GetAllCurrencies()
 
 	if err != nil {
@@ -123,7 +123,7 @@ func GetCurrencyDetails(symbol string) (*CryptoModel, error) {
 }
 
 //GetAllCurrencies gets all currencies 
-func GetAllCurrencies() (*CryptoModel, error) {
+func GetAllCurrencies() (*CryptoList, error) {
 
 	resp, err := http.Get("https://api.hitbtc.com/api/2/public/ticker")
 	if err != nil {
@@ -131,15 +131,13 @@ func GetAllCurrencies() (*CryptoModel, error) {
 	}
 	defer resp.Body.Close()
 	cryptoArr := &CryptoList{}
-	log.Printf("response body is %v",resp.Body)
     err = json.NewDecoder(resp.Body).Decode(&cryptoArr)
-	fmt.Printf("response structure:%+v", cryptoArr)
 	if err != nil {
 		log.Printf("error in decoding the response %v", err)
 		return nil, err
 
 	}
 
-	return nil, nil
+	return cryptoArr, nil
 
 }
